@@ -1,0 +1,32 @@
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@inject LazyAssemblyLoader AssemblyLoader
+
+<Router
+        OnNavigateAsync="OnNavigateAsync"
+           AdditionalAssemblies="_lazyLoadedAssemblies"
+        AppAssembly="@typeof(Program).Assembly">
+    <Found 
+           Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p>Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+
+@code
+{
+    private List<Assembly> _lazyLoadedAssemblies = new List<Assembly>();
+    private async Task OnNavigateAsync(NavigationContext context)
+    {
+        if (context.Path.ToLower().Contains("admin"))
+        {
+            var assemblies = await AssemblyLoader.LoadAssembliesAsync(new[] { "Admin.dll" });
+            _lazyLoadedAssemblies.AddRange(assemblies);
+        }
+    }
+}
